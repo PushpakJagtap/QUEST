@@ -1,6 +1,6 @@
 QUEST Read me:
 
-QUEST (QUantiization frEe Synthesis of conTroller) an open source software tool (available at http://www.hcs.ei.tum.de) for automated controller synthesis for incrementally input-to-state stable nonlinear control systems. The tool is implemented in C++ and contains two major parts:
+QUEST (QUantiization frEe Synthesis of conTroller) is an open source software tool (available at http://www.hcs.ei.tum.de) for automated controller synthesis for incrementally input-to-state stable nonlinear control systems. The tool is implemented in C++ and contains two major parts:
 	1. Construction of symbolic abstraction: the tool uses state-space quantization-free approach for construction of symbolic which 	    helps to resolve the issue of so-called curse of dimensionality while modelling systems with high-dimensional state spaces.
 	2. Symbolic controller synthesis: the synthesis of controller is implemented using fixed point computations.
 
