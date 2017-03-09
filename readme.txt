@@ -1,4 +1,8 @@
-TOOL:
+QUEST Read me:
+
+QUEST is an open source software tool (available at http://www.hcs.ei.tum.de) for automated controller synthesis for incrementally input-to-state stable nonlinear control systems. The tool is implemented in C++ and contains two major parts:
+	1. Construction of symbolic abstraction: the tool uses state-space quantization-free approach for construction of symbolic which 	    helps to resolve the issue of so-called curse of dimensionality while modelling systems with high-dimensional state spaces.
+	2. Symbolic controller synthesis: the synthesis of controller is implemented using fixed point computations.
 
 Requirments:
 1. A working C/C++ development environment
@@ -13,3 +17,5 @@ On Windows and linux, we experienced that the header files util.h and config.h w
 missing in /opt/local and we manually copied them to 
 	/opt/local/include.
 For further details about windows installation, please refer to the installation_notes_windows.txt
+
+FOR MORE DETAILS KINDLY REFER TO USER MANUAL AND REFERENCES THEREIN!!!
