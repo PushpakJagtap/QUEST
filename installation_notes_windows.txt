@@ -1,0 +1,34 @@
+Title: installation_notes_windows
+
+This file serves as a complementary readme file. Please refer to the readme.txt file for complete overview about the TOOL requirements and structure. Here, we present step-by-step guide on how to install and use TOOL in Windows.
+Installation in Windows Systems
+================================
+1- (MSYS-2 Installation) 
+You have to downbload and install MSYS2: https://sourceforge.net/projects/msys2/files/latest/download. We follow the default installation where MSYS-2 gets installed to c:\msys64. After installing, you run the following commands on MSYS-2 terminal to update it and install MinGW compilers. 
+	
+	- pacman -Su		(to update all)
+	- pacman -S make
+	- pacman -S mingw-w64-x86_64-gcc
+Then, you need to add "C:\msys64\mingw64\bin" to windwows PATH variable.
+2- (CUDD-3.0.0 Installation) 
+Download and extract the CUDD-3.0.0 library. Now, you should use the mingw64 shell (C:\mingw64_shell.bat) and navigate to cudd root folder then run the configure with:
+	./configure --enable-shared --enable-obj --enable-dddmp CXXFLAGS='-Wall -Wextra -std=c++11 -g -O3 -D_GLIBCXX_USE_CXX11_ABI=0'
+	
+This allows compiling cplusplus interface with old symbol naming for c++11 standard that became default after g++ 5.1. We do so because Matlab supports compilers with versions less than 5.0 (actually g++4.8 or MinGW_64_g++ 4.9) which causes using such old mangled symbols in the object files. More info about this issue : https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html. The following are the configurations used for CUDD:		
+		--------------------------------------------------
+		Configuration summary for cudd 3.0.0
+		Build system   : x86_64-pc-mingw64
+		Host system    : x86_64-pc-mingw64
+		Prefix         : '/usr/local'
+		Compilers      : 'gcc    -Wall -Wextra -g -O3'
+			       : 'g++    -Wall -Wextra -std=c++0x -g -O3 -D_GLIBCXX_USE_CXX11_ABI=0'
+		Shared library : yes
+		dddmp enabled  : yes
+		obj enabled    : yes
+		--------------------------------------------------
+Now, follow on compiling and instaling CUDD-3.0.0 by running the commands:
+	- make
+	- make install
+Now you should get the file libcudd.a in /usr/local/lib. Copy it to libcudd.lib in the same folder, while keeping the original (.a) file.
+Copy file libcudd-3-0-0-0.dll from /usr/local/bin to the "System32" windows folder.
+Copy the config.h and util/util.h files to the /usr/local/include.
