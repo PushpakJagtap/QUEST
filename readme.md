@@ -9,12 +9,15 @@ The tool is implemented in C++ and contains two major parts:
 	- the C++ object-oriented wrapper
 	- the dddmp library and
 	- the shared library
-option enabled. The package follows the usual configure, make, and make install installation
-routine. We use cudd-3.0.0, with the configuration
+
+option enabled. The package follows the usual configure, make, and make install installation routine. We use cudd-3.0.0, with the configuration
+
 	`$ ./configure --enable-shared --enable-obj --enable-dddmp--prefix=/opt/local/`
+	
 On Windows and linux, we experienced that the header files util.h and config.h were
 missing in /opt/local and we manually copied them to 
 	/opt/local/include.
+
 For further details about windows installation, please refer to the installation_notes_windows.txt
 
 FOR MORE DETAILS KINDLY REFER TO USER MANUAL AND REFERENCES THEREIN!!!
