@@ -8,16 +8,40 @@ ah=3.6e-3;
 te=12;
 th=100;
 Dt=5;
+lb=[0,0]
+ub=[1,1]
+eta=[0.5,1]
 %variable Declaration
 Y=zeros(sDIM,6);
 X1=zeros(sDIM,1);
 %control inputs
 filename = 'controller.txt';
 input=importdata(filename);
-for i=1:length(input)
-   u(1,i)=bitand(floor(input(i)/2),1);
-   u(2,i)=bitand(input(i),1);
+	
+for i=1:length(lb)
+	nInput(i)=floor(ub(i)/eta(i))-ceil(lb(i)/eta(i))+1;
 end
+for i=1:length(lb)-1
+    temp1=1;
+    for j=i:length(lb)-1
+        temp1=temp1*nInput(j+1);
+    end
+    xx(i)=temp1;
+end
+xx;
+for j=1:length(input)
+    for i=1:length(lb)
+        if i<length(lb)
+            temp2=floor(input(j)/xx(i));
+            temp3=mod(temp2,xx(i));
+            u(i,j)=lb(i)+temp3*eta(i);
+        elseif i==length(lb)
+            temp4=mod(input(j),xx(i-1));
+            u(i,j)=lb(i)+temp4*eta(i);
+        end
+    end
+end               
+
 % initial conditions
 X_init=[16 16 16 16 16 16];
 %X_init=19.5*ones(sDIM,D_tau);
@@ -52,15 +76,15 @@ plot(Time,Y);
 figure(2);
 plot(Y(1,:),Y(2,:));
 hold on;
-plot([17.5, 17.5 ,21,21,17.5],[17.5,21,21,17.5,17.5]);
+plot([17.5, 17.5 ,21.5,21.5,17.5],[17.5,21.5,21.5,17.5,17.5]);
 figure(3);
 plot(Y(3,:),Y(4,:));
 hold on;
-plot([17.5, 17.5 ,21,21,17.5],[17.5,21,21,17.5,17.5]);
+plot([17.5, 17.5 ,21.5,21.5,17.5],[17.5,21.5,21.5,17.5,17.5]);
 figure(4);
 plot(Y(5,:),Y(6,:));
 hold on;
-plot([17.5, 17.5 ,21,21,17.5],[17.5,21,21,17.5,17.5]);
+plot([17.5, 17.5 ,21.5,21.5,17.5],[17.5,21.5,21.5,17.5,17.5]);
 figure(5);
 plot(Time1,Uem(1,:));
 figure(6);

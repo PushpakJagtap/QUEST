@@ -28,6 +28,8 @@ friend class abstractionMode;
 Cudd* mgr_;
 size_t P_;
 size_t N_;
+size_t dim_;
+double* eta_;
 size_t *nofBddVars_;
 size_t **indBddVars_;
 size_t *nofAbsStates_;
@@ -78,6 +80,60 @@ public :
 		} 
 		
 }
+	/* new constructor for continuous input */
+
+		SymbolicSetSpace( Cudd &mgr, const size_t dim, const double* lb, const double* ub, const double* eta, const size_t N){
+			for (size_t i=0; i<dim; i++) {
+				      if((ub[i]-lb[i])<eta[i]) {
+				          std::ostringstream os;
+				          os << "Error: scots::SymbolicSet:  each interval must contain at least one cell.";
+				          throw std::invalid_argument(os.str().c_str());
+				      }
+				    }
+				dim_=dim;
+				eta_ = new double[dim];
+				double Nl, Nu;
+				size_t nInput[dim];
+				size_t temp1=1;
+				for(size_t i=0;i<dim;i++){
+					eta_[i]=eta[i];
+					Nl=std::ceil(lb[i]/eta[i]);
+					Nu=std::floor(ub[i]/eta[i]);
+					nInput[i]=(size_t)std::abs(Nu-Nl)+1;
+					temp1=temp1*nInput[i];
+				}
+				const size_t P=temp1;
+				mgr_ = &mgr;
+				P_ = P;
+				N_ = 2*N + 1;
+				nvars_ = 0;
+				nofBddVars_ = new size_t [N_];
+				indBddVars_ = new size_t* [N_];
+				nofAbsStates_ = new size_t [N_];
+				symbolicSetSpace_ = mgr.bddZero();
+				for(size_t j = 0; j < N_; j++)
+				{
+					nofAbsStates_[j] = P;
+					if( P == 1 )
+						nofBddVars_[j] = 1;
+					else
+						nofBddVars_[j] = std::ceil(log2(P));
+					indBddVars_[j] = new size_t [nofBddVars_[j]];
+					for(size_t i = 0; i < nofBddVars_[j]; i++)
+					{
+						BDD var = mgr.bddVar();
+						indBddVars_[j][i] = var.NodeReadIndex();
+					}
+				}
+				for(size_t i = 0; i < N_; i++)
+				{
+					for(size_t j = 0; j < nofBddVars_[i]; j++)
+					{
+						nvars_++;
+					}
+				}
+
+		}
 	
 	~SymbolicSetSpace(){
 	        delete[] nofAbsStates_;

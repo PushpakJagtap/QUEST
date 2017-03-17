@@ -14,7 +14,6 @@ using namespace std;
 const int sDIM = 10; /* System dimension */
 const int iDIM = 2; /* Input dimension */
 const double T = 25; /* Sampling time */
-size_t P = 3; /* Cardinality of (quantized) input set */
 size_t N = 12; /* Temporal Horizon */
 
 typedef std::array<double,sDIM> state_type;
@@ -24,19 +23,9 @@ template<class F>
 void ode_solver(F rhs, state_type &x, size_t nint, double h);
 
 /* ODE */
-auto  system_post = [](state_type &x, int u) -> void {
-    
-    /* Mapping abstract input to system inputs */
-    double us[iDIM]={0};
-    if(u==0)
-    {us[0]=0;us[1]=0;}
-    if(u==1)
-    {us[0]=0;us[1]=1;}
-    if(u==2)
-    {us[0]=1;us[1]=0;}
-    
+auto  system_post = [](state_type &x, double* u) -> void {
     /* ode describing thermal model*/
-    auto rhs=[us](state_type &xx, const state_type &x) -> void {
+    auto rhs=[u](state_type &xx, const state_type &x) -> void {
         const double a=0.05;
         const double ae2=0.005;
         const double ae5=0.005;
@@ -45,10 +34,10 @@ auto  system_post = [](state_type &x, int u) -> void {
         const double te=12;
         const double th=100;
     xx[0]=(-a-ae)*x[0]+a*x[1]+ae*te;
-    xx[1]=(-4*a-ae2-ah*us[0])*x[1]+a*x[0]+a*x[6]+a*x[8]+a*x[2]+ae2*te+ah*th*us[0];
+    xx[1]=(-4*a-ae2-ah*u[0])*x[1]+a*x[0]+a*x[6]+a*x[8]+a*x[2]+ae2*te+ah*th*u[0];
     xx[2]=(-2*a-ae)*x[2]+a*x[1]+a*x[3]+ae*te;
     xx[3]=(-2*a-ae)*x[3]+a*x[2]+a*x[4]+ae*te;
-    xx[4]=(-4*a-ae5-ah*us[1])*x[4]+a*x[3]+a*x[7]+a*x[5]+a*x[9]+ae5*te+ah*th*us[1];
+    xx[4]=(-4*a-ae5-ah*u[1])*x[4]+a*x[3]+a*x[7]+a*x[5]+a*x[9]+ae5*te+ah*th*u[1];
     xx[5]=(-a-ae)*x[5]+a*x[4]+ae*te;
     xx[6]=(-a-ae)*x[6]+a*x[1]+ae*te;
     xx[7]=(-a-ae)*x[7]+a*x[4]+ae*te;
@@ -56,14 +45,14 @@ auto  system_post = [](state_type &x, int u) -> void {
     xx[9]=(-a-ae)*x[9]+a*x[4]+ae*te;
     };
     size_t nint = 5; /* no. of time step for ode solving */
-    double h=T/nint; /* time step for ode solving (T is an sampling time) */
+    double h=T/nint; /* time step for ode solving (T is the sampling time) */
     ode_solver(rhs,x,nint,h); /* Runga Kutte solver */
 };
 
-/* defining constrains for the controller 
-	ul[i] : upper limit for the temperature in ith dimension 
-	ll[i] : lower limit for the temperature in ith dimension */
-auto constrain = [](state_type y) -> bool {
+/* defining safe set for the controller
+	ul[i] : upper bound on the temperature in ith room
+	ll[i] : lower bound on the temperature in ith room */
+auto setBounds = [](state_type y) -> bool {
     double ul=21.8;
     double ll=18;
     bool s = true;
@@ -90,15 +79,15 @@ int  main(){
    state_type xs;
    xs[0]=17;xs[1]=17;xs[2]=17;xs[3]=17;xs[4]=17;xs[5]=17;xs[6]=17;xs[7]=17;xs[8]=17;xs[9]=17;
     
-/* initial state of the system */
-   state_type x0;
-   x0[0]=19;x0[1]=19;x0[2]=19;x0[3]=19.8;x0[4]=20.8;x0[5]=19.8;x0[6]=19;x0[7]=19.8;x0[8]=19;x0[9]=19.8;
-
-    /* approximation on abstraction */
-    double epsilon = 0.1;
-    
-    /* number of time samples the controller should run */
-    size_t t = 20;
+/************************************************************
+     input information
+*************************************************************/
+    const size_t P = 3;  /* Number of elements in input set*/
+    double ud[P][iDIM]={{0,0},{0,1},{1,0}};
+    double *UD[P];
+    for(size_t i=0;i<P;i++){
+        UD[i]=ud[i];
+    }
     
 /******************************************************
      Symbolic model construction
@@ -116,7 +105,7 @@ int  main(){
     /* Computing the constrain set */
     std::cout<<"Computing the constrain set ... ";
     tt.tic();
-    BDD set = ab.getConstrainSet(system_post,constrain,xs);
+    BDD set = ab.getAbstractSet(system_post,setBounds,xs,iDIM,P,UD);
     tt.toc();
     if(set == ddmgr.bddZero()){
         std::cout << "Set is empty !!";
@@ -140,14 +129,26 @@ int  main(){
         return 0;
     }
     
+/******************************************************
+     closed-loop simulation
+******************************************************/
+    /* initial state of the system */
+    state_type x0;
+    x0[0]=19;x0[1]=19;x0[2]=19;x0[3]=19.8;x0[4]=20.8;x0[5]=19.8;x0[6]=19;x0[7]=19.8;x0[8]=19;x0[9]=19.8;
+    
+    /* approximation on abstraction */
+    double epsilon = 0.1;
+    
+    /* number of time samples the controller should run */
+    size_t t = 20;
     /* find out mode sequence which is very close to the output */
     std::cout<<"Computed initial state is...\n";
     
-    /* finding inital stae in abstraction for safety specification */
+    /* finding initial state in abstraction for safety specification */
     BDD w0 = ab.getAbsState(system_post,set,x0,xs,epsilon,sDIM);
     
     /* open-loop simulation */
-    ab.openLoopSim(C,w0,system_post,x0,sDIM,t);
+    ab.closedLoopSim(C,w0,system_post,x0,sDIM,t);
     
     return 0;
 
