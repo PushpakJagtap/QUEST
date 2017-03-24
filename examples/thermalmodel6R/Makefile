@@ -5,11 +5,6 @@
 CC       	  = clang++
 CXXFLAGS 		= -Wall -Wextra -std=c++11 -O3 -g -O0
 
-#
-# scots 
-#
-SCOTSROOT		= ../../..
-SCOTSINC		= -I$(SCOTSROOT)/bdd -I$(SCOTSROOT)/utils 
 
 #
 # cudd 
