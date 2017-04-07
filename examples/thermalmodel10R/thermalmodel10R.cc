@@ -50,8 +50,8 @@ auto  system_post = [](state_type &x, double* u) -> void {
 };
 
 /* defining safe set for the controller
-	ul[i] : upper bound on the temperature in ith room
-	ll[i] : lower bound on the temperature in ith room */
+	ul : upper bound on the temperature in ith room
+	ll : lower bound on the temperature in ith room */
 auto setBounds = [](state_type y) -> bool {
     double ul=21.8;
     double ll=18;
