@@ -30,7 +30,7 @@ template<class state_type> class getAbstraction: public abstractionMode {
 
 	/*getAbstraction(size_t Dim_):dim_(Dim_){ }*/
 /******************************************************************
-                      For discrete input
+                      For discrete input set
 *******************************************************************/
 /*************************getAbstractSet********************************/
 
@@ -90,7 +90,7 @@ template<class state_type> class getAbstraction: public abstractionMode {
 	}
 
 /******************************************************************
-	                    For continuous input
+	                    For continuous input set
 *******************************************************************/
 
 /****************************getAbstractSet********************************/
